@@ -54,8 +54,13 @@ export default function EditOrderPage() {
       if (sf) {
         setIsScheduled(true);
         const d = new Date(sf);
-        setScheduledDate(d.toISOString().slice(0, 10));
-        setScheduledTime(d.toISOString().slice(11, 16));
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        setScheduledDate(`${y}-${m}-${day}`);
+        setScheduledTime(`${hh}:${mm}`);
       }
       setInitialized(true);
     }
