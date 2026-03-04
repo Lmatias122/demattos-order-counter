@@ -16,10 +16,21 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const BYPASS_AUTH = true;
+
+const fakeUser = {
+  id: "bypass-user",
+  email: "admin@demattoslanches.com",
+  app_metadata: {},
+  user_metadata: { display_name: "Admin" },
+  aud: "authenticated",
+  created_at: new Date().toISOString(),
+} as unknown as User;
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [roles, setRoles] = useState<AppRole[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(BYPASS_AUTH ? fakeUser : null);
+  const [roles, setRoles] = useState<AppRole[]>(BYPASS_AUTH ? ["admin", "cashier", "kitchen"] : []);
+  const [loading, setLoading] = useState(BYPASS_AUTH ? false : true);
 
   const fetchRoles = async (userId: string) => {
     const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
@@ -27,6 +38,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    if (BYPASS_AUTH) return;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const u = session?.user ?? null;
       setUser(u);
@@ -49,11 +62,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    if (BYPASS_AUTH) return;
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
   };
 
   const signUp = async (email: string, password: string, displayName: string) => {
+    if (BYPASS_AUTH) return;
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -63,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    if (BYPASS_AUTH) return;
     await supabase.auth.signOut();
   };
 
