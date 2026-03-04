@@ -113,14 +113,23 @@ export default function OrdersPage() {
                 )}
                 <div className="text-sm space-y-1">
                   {order.order_items.map((item) => (
-                    <div key={item.id} className="flex justify-between">
-                      <span>
-                        {item.quantity}x {item.item_name}
-                        {item.notes && <span className="text-muted-foreground ml-1">({item.notes})</span>}
-                      </span>
-                      <span className="text-muted-foreground">
-                        R$ {(item.quantity * item.unit_price).toFixed(2)}
-                      </span>
+                    <div key={item.id}>
+                      <div className="flex justify-between">
+                        <span>
+                          {item.quantity}x {item.item_name}
+                          {item.notes && <span className="text-muted-foreground ml-1">({item.notes})</span>}
+                        </span>
+                        <span className="text-muted-foreground">
+                          R$ {(item.quantity * item.unit_price).toFixed(2)}
+                        </span>
+                      </div>
+                      {item.order_item_addons && item.order_item_addons.length > 0 && (
+                        <div className="pl-4 text-xs text-muted-foreground">
+                          {item.order_item_addons.map((a) => (
+                            <span key={a.id} className="block">+ {a.quantity > 1 ? `${a.quantity}x ` : ""}{a.addon_name} (R$ {Number(a.addon_price * a.quantity).toFixed(2)})</span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
