@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      menu_addons: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          price?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
       menu_categories: {
         Row: {
           created_at: string
@@ -72,6 +96,41 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "menu_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_item_addons: {
+        Row: {
+          addon_name: string
+          addon_price: number
+          created_at: string
+          id: string
+          order_item_id: string
+          quantity: number
+        }
+        Insert: {
+          addon_name: string
+          addon_price?: number
+          created_at?: string
+          id?: string
+          order_item_id: string
+          quantity?: number
+        }
+        Update: {
+          addon_name?: string
+          addon_price?: number
+          created_at?: string
+          id?: string
+          order_item_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_item_addons_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
             referencedColumns: ["id"]
           },
         ]
