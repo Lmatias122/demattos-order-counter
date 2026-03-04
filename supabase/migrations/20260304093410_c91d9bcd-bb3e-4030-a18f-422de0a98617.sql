@@ -1,0 +1,1 @@
+ALTER TABLE public.orders ADD COLUMN scheduled_for timestamp with time zone DEFAULT NULL;

@@ -11,6 +11,7 @@ import NewOrderPage from "@/pages/NewOrder";
 import MenuPage from "@/pages/Menu";
 import StatsPage from "@/pages/Stats";
 import UsersPage from "@/pages/Users";
+import EditOrderPage from "@/pages/EditOrder";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ function ProtectedRoutes() {
         <Route path="/" element={<Navigate to="/orders" replace />} />
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/orders/new" element={<NewOrderPage />} />
+        <Route path="/orders/:id/edit" element={<EditOrderPage />} />
         <Route path="/menu" element={<MenuPage />} />
         <Route path="/stats" element={<StatsPage />} />
         <Route path="/users" element={<UsersPage />} />

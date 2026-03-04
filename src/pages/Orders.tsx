@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Pencil, CalendarClock } from "lucide-react";
+import { format as fmtDate } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
@@ -126,6 +127,12 @@ export default function OrdersPage() {
                 {order.notes && (
                   <p className="text-xs text-muted-foreground italic">Obs: {order.notes}</p>
                 )}
+                {(order as any).scheduled_for && (
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <CalendarClock className="h-3 w-3" />
+                    <span>Agendado: {format(new Date((order as any).scheduled_for), "dd/MM HH:mm", { locale: ptBR })}</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between pt-2 border-t">
                   <div>
                     <span className="font-bold text-primary">R$ {Number(order.total).toFixed(2)}</span>
@@ -133,16 +140,23 @@ export default function OrdersPage() {
                       {format(new Date(order.created_at), "dd/MM HH:mm", { locale: ptBR })}
                     </p>
                   </div>
-                  {canUpdateStatus && order.status !== "delivered" && order.status !== "cancelled" && (
-                    <div className="flex gap-2">
-                      <Button size="sm" onClick={() => handleNextStatus(order)}>
-                        Avançar
+                  <div className="flex gap-2">
+                    {canCreateOrders && order.status !== "delivered" && order.status !== "cancelled" && (
+                      <Button size="sm" variant="outline" onClick={() => navigate(`/orders/${order.id}/edit`)}>
+                        <Pencil className="h-3 w-3 mr-1" /> Editar
                       </Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleCancel(order)}>
-                        Cancelar
-                      </Button>
-                    </div>
-                  )}
+                    )}
+                    {canUpdateStatus && order.status !== "delivered" && order.status !== "cancelled" && (
+                      <>
+                        <Button size="sm" onClick={() => handleNextStatus(order)}>
+                          Avançar
+                        </Button>
+                        <Button size="sm" variant="destructive" onClick={() => handleCancel(order)}>
+                          Cancelar
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -28,18 +28,40 @@ export function useOrders(dateFilter?: string) {
   });
 }
 
+export function useOrder(id: string) {
+  return useQuery({
+    queryKey: ["orders", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("*, order_items(*)")
+        .eq("id", id)
+        .single();
+      if (error) throw error;
+      return data as Order;
+    },
+    enabled: !!id,
+  });
+}
+
 export function useCreateOrder() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (order: {
       customer_name?: string;
       notes?: string;
+      scheduled_for?: string | null;
       items: { menu_item_id: string; item_name: string; quantity: number; unit_price: number; notes?: string }[];
     }) => {
       const total = order.items.reduce((s, i) => s + i.quantity * i.unit_price, 0);
       const { data: orderData, error: orderError } = await supabase
         .from("orders")
-        .insert({ customer_name: order.customer_name, notes: order.notes, total })
+        .insert({
+          customer_name: order.customer_name,
+          notes: order.notes,
+          total,
+          scheduled_for: order.scheduled_for || null,
+        })
         .select()
         .single();
       if (orderError) throw orderError;
@@ -49,6 +71,41 @@ export function useCreateOrder() {
       if (itemsError) throw itemsError;
 
       return orderData;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["orders"] }),
+  });
+}
+
+export function useUpdateOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (order: {
+      id: string;
+      customer_name?: string;
+      notes?: string;
+      scheduled_for?: string | null;
+      items: { menu_item_id: string; item_name: string; quantity: number; unit_price: number; notes?: string }[];
+    }) => {
+      const total = order.items.reduce((s, i) => s + i.quantity * i.unit_price, 0);
+
+      const { error: orderError } = await supabase
+        .from("orders")
+        .update({
+          customer_name: order.customer_name,
+          notes: order.notes,
+          total,
+          scheduled_for: order.scheduled_for || null,
+        })
+        .eq("id", order.id);
+      if (orderError) throw orderError;
+
+      // Delete existing items and re-insert
+      const { error: delError } = await supabase.from("order_items").delete().eq("order_id", order.id);
+      if (delError) throw delError;
+
+      const orderItems = order.items.map((i) => ({ ...i, order_id: order.id }));
+      const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
+      if (itemsError) throw itemsError;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["orders"] }),
   });
