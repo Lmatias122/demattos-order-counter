@@ -5,7 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Minus, Plus, Trash2, ArrowLeft } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Minus, Plus, Trash2, ArrowLeft, CalendarClock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -27,6 +29,9 @@ export default function NewOrderPage() {
   const [orderNotes, setOrderNotes] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [scheduledTime, setScheduledTime] = useState("");
 
   const activeItems = (menuItems || []).filter(
     (i) => i.is_active && (!activeCategory || i.category_id === activeCategory)
@@ -63,10 +68,16 @@ export default function NewOrderPage() {
       toast.error("Adicione pelo menos um item");
       return;
     }
+    if (isScheduled && (!scheduledDate || !scheduledTime)) {
+      toast.error("Preencha a data e hora do agendamento");
+      return;
+    }
     try {
+      const scheduled_for = isScheduled ? `${scheduledDate}T${scheduledTime}:00` : null;
       await createOrder.mutateAsync({
         customer_name: customerName || undefined,
         notes: orderNotes || undefined,
+        scheduled_for,
         items: cart,
       });
       toast.success("Pedido criado!");
@@ -189,6 +200,33 @@ export default function NewOrderPage() {
               onChange={(e) => setOrderNotes(e.target.value)}
               rows={2}
             />
+
+            {/* Scheduling */}
+            <div className="space-y-2 border rounded-lg p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                  <Label htmlFor="schedule-toggle" className="text-sm font-medium">Agendar pedido</Label>
+                </div>
+                <Switch id="schedule-toggle" checked={isScheduled} onCheckedChange={setIsScheduled} />
+              </div>
+              {isScheduled && (
+                <div className="flex gap-2">
+                  <Input
+                    type="date"
+                    value={scheduledDate}
+                    onChange={(e) => setScheduledDate(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Input
+                    type="time"
+                    value={scheduledTime}
+                    onChange={(e) => setScheduledTime(e.target.value)}
+                    className="w-[120px]"
+                  />
+                </div>
+              )}
+            </div>
 
             <div className="flex items-center justify-between font-bold text-lg pt-2 border-t">
               <span>Total</span>
